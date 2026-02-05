@@ -86,23 +86,24 @@ VALUES (1004, '赵六', 2) ON DUPLICATE KEY UPDATE distributor_name = '赵六';
 INSERT INTO t_distributor (distributor_id, distributor_name, team_id) 
 VALUES (1005, '钱七', 3) ON DUPLICATE KEY UPDATE distributor_name = '钱七';
 
--- 插入示例订单数据
+-- 插入示例订单数据（测试数据，生产环境建议删除或更新为实际数据）
+-- 使用 CURDATE() 插入当天的示例数据
 INSERT INTO t_order (order_id, distributor_id, order_amount, order_status, order_date, customer_name, customer_id) 
-VALUES ('ORD20240101001', 1001, 299.00, '已支付', '2024-01-01 10:00:00', '客户A', 'CUST001')
+VALUES ('ORD_SAMPLE_001', 1001, 299.00, '已支付', CONCAT(CURDATE(), ' 10:00:00'), '客户A', 'CUST001')
 ON DUPLICATE KEY UPDATE order_amount = 299.00;
 
 INSERT INTO t_order (order_id, distributor_id, order_amount, order_status, order_date, customer_name, customer_id) 
-VALUES ('ORD20240101002', 1001, 499.00, '已支付', '2024-01-01 11:00:00', '客户B', 'CUST002')
+VALUES ('ORD_SAMPLE_002', 1001, 499.00, '已支付', CONCAT(CURDATE(), ' 11:00:00'), '客户B', 'CUST002')
 ON DUPLICATE KEY UPDATE order_amount = 499.00;
 
 INSERT INTO t_order (order_id, distributor_id, order_amount, order_status, order_date, customer_name, customer_id) 
-VALUES ('ORD20240101003', 1002, 199.00, '已支付', '2024-01-01 12:00:00', '客户C', 'CUST003')
+VALUES ('ORD_SAMPLE_003', 1002, 199.00, '已支付', CONCAT(CURDATE(), ' 12:00:00'), '客户C', 'CUST003')
 ON DUPLICATE KEY UPDATE order_amount = 199.00;
 
 INSERT INTO t_order (order_id, distributor_id, order_amount, order_status, order_date, customer_name, customer_id) 
-VALUES ('ORD20240101004', 1003, 399.00, '已支付', '2024-01-01 13:00:00', '客户D', 'CUST004')
+VALUES ('ORD_SAMPLE_004', 1003, 399.00, '已支付', CONCAT(CURDATE(), ' 13:00:00'), '客户D', 'CUST004')
 ON DUPLICATE KEY UPDATE order_amount = 399.00;
 
 INSERT INTO t_order (order_id, distributor_id, order_amount, order_status, order_date, customer_name, customer_id) 
-VALUES ('ORD20240101005', 1001, 599.00, '已支付', '2024-01-01 14:00:00', '客户A', 'CUST001')
+VALUES ('ORD_SAMPLE_005', 1001, 599.00, '已支付', CONCAT(CURDATE(), ' 14:00:00'), '客户A', 'CUST001')
 ON DUPLICATE KEY UPDATE order_amount = 599.00;

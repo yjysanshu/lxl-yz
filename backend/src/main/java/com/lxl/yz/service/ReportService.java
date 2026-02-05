@@ -33,7 +33,7 @@ public class ReportService {
                 d.distributor_name,
                 ds.order_count,
                 ds.total_amount,
-                ROUND(ds.total_amount / ds.order_count, 2) as avg_price
+                ROUND(ds.total_amount / NULLIF(ds.order_count, 0), 2) as avg_price
             FROM t_daily_statistics ds
             LEFT JOIN t_distributor d ON ds.distributor_id = d.distributor_id
             WHERE ds.stat_date = ?
@@ -74,7 +74,7 @@ public class ReportService {
                 COUNT(DISTINCT o.customer_id) as customer_count,
                 COUNT(*) as order_count,
                 SUM(o.order_amount) as total_amount,
-                ROUND(SUM(o.order_amount) / COUNT(*), 2) as avg_price
+                ROUND(SUM(o.order_amount) / NULLIF(COUNT(*), 0), 2) as avg_price
             FROM t_order o
             LEFT JOIN t_distributor d ON o.distributor_id = d.distributor_id
             WHERE o.order_status = '已支付'
@@ -124,7 +124,7 @@ public class ReportService {
                 COUNT(DISTINCT o.customer_id) as customer_count,
                 COUNT(*) as order_count,
                 SUM(o.order_amount) as total_amount,
-                ROUND(SUM(o.order_amount) / COUNT(*), 2) as avg_price
+                ROUND(SUM(o.order_amount) / NULLIF(COUNT(*), 0), 2) as avg_price
             FROM t_order o
             LEFT JOIN t_distributor d ON o.distributor_id = d.distributor_id
             WHERE o.order_status = '已支付'
