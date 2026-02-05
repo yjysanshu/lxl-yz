@@ -24,6 +24,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DataFetchService {
 
+    // API配置常量
+    private static final String YOUZAN_API_BASE_URL = "https://www.youzan.com/v4/ump/new-salesman/order/getList.json";
+    private static final int PAGE_SIZE = 20;
+    private static final int MAX_PAGES = 100;
+    private static final long PAGE_DELAY_MS = 1000L;
+    private static final int TIME_TYPE_CREATE_TIME = 1;
+    private static final int SHOP_CHANNEL_ALL = -1;
+    
     private final OrderRepository orderRepository;
     private final ConfigRepository configRepository;
     private final DistributorRepository distributorRepository;
@@ -111,8 +119,6 @@ public class DataFetchService {
             WebClient webClient = webClientBuilder.build();
             
             // API基础URL和参数
-            String baseUrl = "https://www.youzan.com/v4/ump/new-salesman/order/getList.json";
-            int pageSize = 20;
             int currentPage = 1;
             boolean hasNext = true;
             
@@ -122,8 +128,8 @@ public class DataFetchService {
             long endTime = currentTime;
             
             while (hasNext) {
-                String url = String.format("%s?pageSize=%d&page=%d&timeType=1&startTime=%d&endTime=%d&teamId=&dsMobile=&orderNo=&groupId=&realKdtId=&shopChannel=-1&settleState=",
-                    baseUrl, pageSize, currentPage, startTime, endTime);
+                String url = String.format("%s?pageSize=%d&page=%d&timeType=%d&startTime=%d&endTime=%d&teamId=&dsMobile=&orderNo=&groupId=&realKdtId=&shopChannel=%d&settleState=",
+                    YOUZAN_API_BASE_URL, PAGE_SIZE, currentPage, TIME_TYPE_CREATE_TIME, startTime, endTime, SHOP_CHANNEL_ALL);
                 
                 log.info("请求第{}页订单数据: {}", currentPage, url);
                 
@@ -177,14 +183,14 @@ public class DataFetchService {
                 currentPage++;
                 
                 // 防止无限循环，最多获取100页
-                if (currentPage > 100) {
-                    log.warn("已达到最大页数限制(100页)，停止获取");
+                if (currentPage > MAX_PAGES) {
+                    log.warn("已达到最大页数限制({}页)，停止获取", MAX_PAGES);
                     break;
                 }
                 
                 // 避免请求过快
                 if (hasNext) {
-                    Thread.sleep(1000);
+                    Thread.sleep(PAGE_DELAY_MS);
                 }
             }
             
@@ -213,9 +219,15 @@ public class DataFetchService {
         // 分销员名称
         order.put("distributorName", yzOrder.getOrDefault("dsNickName", "未知分销员"));
         
-        // 订单金额
+        // 订单金额 - 转换为BigDecimal
         String moneyStr = (String) yzOrder.getOrDefault("money", "0.00");
-        order.put("orderAmount", moneyStr);
+        try {
+            BigDecimal orderAmount = new BigDecimal(moneyStr);
+            order.put("orderAmount", orderAmount.toString());
+        } catch (NumberFormatException e) {
+            log.warn("订单金额格式错误: {}, 使用默认值0.00", moneyStr);
+            order.put("orderAmount", "0.00");
+        }
         
         // 订单状态 - state字段：1=待付款，2=待发货，3=已发货，4=已完成，5=已关闭
         Integer state = (Integer) yzOrder.get("state");
