@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/distributor_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: S9zSUHa67p%yZzsEFQsm
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+logging:
+  level:
+    com.lxl.yz: DEBUG
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# Scheduled Tasks Configuration (Development)
+scheduled:
+  fetch-order-data:
+    # Fetch order data every 10 minutes (for testing purposes)
+    cron: "0 */10 * * * ?"
+  calculate-daily-statistics:
+    # Calculate daily statistics at 2:00 AM every day
+    cron: "0 0 2 * * ?"

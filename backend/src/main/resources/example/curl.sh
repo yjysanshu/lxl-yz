@@ -1,0 +1,16 @@
+curl 'https://www.youzan.com/v4/ump/new-salesman/order/getList.json?pageSize=20&teamId=610752&timeType=1&dsMobile=&orderNo=&groupId=&realKdtId=&shopChannel=-1&settleState=&page=1&startTime=1769961600&endTime=1769961600' \
+  -H 'accept: application/json, text/plain, */*' \
+  -H 'accept-language: zh-CN,zh;q=0.9,en;q=0.8' \
+  -H 'cache-control: no-cache' \
+  -b 'yz_log_ftime=1770031928443; yz_log_uuid=0a40a2dc-b0fe-0a79-cd9f-f519901f2a4b; KDTSESSIONID=YZ1467965976871280640YZl4jPd6As; nobody_sign=YZ1467965976871280640YZl4jPd6As; _kdt_id_=371189; yz_fp_hash=nWPVt1770285768lCNmD2iDGC8; dfp=da38bd7a323d2e6b63f42e7bd7a653cda0b2fa27; captcha_sid=YZ1469030601731776512YZMCesC9Uc; sid=YZ1469030695862345728YZXhGjS8Ib; user_id=23484899827; mobile=16675449069; country_code=+86; user_weixin=+86-16675449069; user_nickname=16675449069; Hm_lvt_7fff7ceede91c07fb0a2f9c1850d7987=1770285815; HMACCOUNT=49BC330FE81F7E3E; kdt_id=17321526; team_auth_key=e96e64fd2c15ae9ac4a612e720ba5664; access_token=3dfa6f8a57d77d214641db2492449f; mp_id=722746; weixin_subscribe_key=0c6e63833729aa8fa832060e5bad1f23; weixin_menu_key=2d6efa36cf24265f902d4bd40f40b72d; weixin_certsub_key=64ef9246e2e2876c85e6f3c82d72d2b0; weixin_oldsub_key=8b8d49e9ca4757bbc90c82e35de8e78e; weixin_server_key=d6a186649b789be7901fac3a1364f84a; Hm_lpvt_7fff7ceede91c07fb0a2f9c1850d7987=1770285823; _canwebp=1; new_nav_2024_intro_showed-02=1; yz_log_seqn=1' \
+  -H 'pragma: no-cache' \
+  -H 'priority: u=1, i' \
+  -H 'referer: https://www.youzan.com/v4/salesman/performance-settlement/detail/reports?teamId=610752&pageSize=20&page=1&timeType=1&timeRange%5B0%5D%5B0%5D=2026-02-02&timeRange%5B0%5D%5B1%5D=2026-02-02&timeRange%5B1%5D=0&dsMobile=&orderNo=&groupId=&realKdtId=&shopChannel=-1' \
+  -H 'sec-ch-ua: "Not(A:Brand";v="8", "Chromium";v="144", "Google Chrome";v="144"' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  -H 'sec-ch-ua-platform: "macOS"' \
+  -H 'sec-fetch-dest: empty' \
+  -H 'sec-fetch-mode: cors' \
+  -H 'sec-fetch-site: same-origin' \
+  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36' \
+  -H 'x-yz-action-id: wsc-pc-salesman-0a370ea7-1770285822062-126132'

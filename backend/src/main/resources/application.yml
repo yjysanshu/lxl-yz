@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: yz-distributor-system
+  profiles:
+    active: dev
+server:
+  port: 8080
+# Scheduled Tasks Configuration
+scheduled:
+  fetch-order-data:
+    cron: "0 * * * * ?"
+  calculate-daily-statistics:
+    cron: "0 0 1 * * ?"

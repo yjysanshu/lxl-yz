@@ -16,23 +16,25 @@ public class ScheduledTasks {
     private final DailyStatisticsService dailyStatisticsService;
 
     /**
-     * 每小时自动抓取订单数据
+     * 自动抓取订单数据
+     * 执行时间通过配置文件中的 scheduled.fetch-order-data.cron 属性配置
      */
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "${scheduled.fetch-order-data.cron}")
     public void fetchOrderDataHourly() {
-        log.info("定时任务：开始每小时订单数据抓取");
+        log.info("定时任务：开始订单数据抓取");
         try {
             dataFetchService.fetchOrderData();
-            log.info("定时任务：每小时订单数据抓取完成");
+            log.info("定时任务：订单数据抓取完成");
         } catch (Exception e) {
-            log.error("定时任务：每小时订单数据抓取失败", e);
+            log.error("定时任务：订单数据抓取失败", e);
         }
     }
 
     /**
-     * 每天凌晨1点计算每日统计数据
+     * 计算每日统计数据
+     * 执行时间通过配置文件中的 scheduled.calculate-daily-statistics.cron 属性配置
      */
-    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "${scheduled.calculate-daily-statistics.cron}")
     public void calculateDailyStatistics() {
         log.info("定时任务：开始计算每日统计数据");
         try {
