@@ -98,20 +98,155 @@ public class DataFetchService {
     }
     
     /**
-     * 调用第三方API获取订单数据（示例实现）
-     * 实际项目中需要根据真实的第三方API进行调整
+     * 调用第三方API获取订单数据
+     * 从有赞API获取订单列表
      */
     private List<Map<String, Object>> fetchFromThirdPartyAPI(String token) {
-        // 这里是模拟数据，实际应该调用真实的第三方API
-        // WebClient webClient = webClientBuilder.build();
-        // return webClient.get()
-        //     .uri("https://third-party-api.com/orders")
-        //     .header("Authorization", "Bearer " + token)
-        //     .retrieve()
-        //     .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
-        //     .block();
+        log.info("开始从有赞API获取订单数据，Token: {}", token);
         
-        log.info("模拟从第三方API获取订单数据，Token: {}", token);
-        return new ArrayList<>(); // 返回空列表，实际应该返回真实数据
+        List<Map<String, Object>> allOrders = new ArrayList<>();
+        
+        try {
+            // 构建WebClient
+            WebClient webClient = webClientBuilder.build();
+            
+            // API基础URL和参数
+            String baseUrl = "https://www.youzan.com/v4/ump/new-salesman/order/getList.json";
+            int pageSize = 20;
+            int currentPage = 1;
+            boolean hasNext = true;
+            
+            // 获取时间范围 - 当天
+            long currentTime = System.currentTimeMillis() / 1000;
+            long startTime = currentTime - 86400; // 前一天
+            long endTime = currentTime;
+            
+            while (hasNext) {
+                String url = String.format("%s?pageSize=%d&page=%d&timeType=1&startTime=%d&endTime=%d&teamId=&dsMobile=&orderNo=&groupId=&realKdtId=&shopChannel=-1&settleState=",
+                    baseUrl, pageSize, currentPage, startTime, endTime);
+                
+                log.info("请求第{}页订单数据: {}", currentPage, url);
+                
+                // 调用API
+                Map<String, Object> response = webClient.get()
+                    .uri(url)
+                    .header("accept", "application/json, text/plain, */*")
+                    .header("accept-language", "zh-CN,zh;q=0.9,en;q=0.8")
+                    .header("cache-control", "no-cache")
+                    .header("pragma", "no-cache")
+                    .header("cookie", token) // token作为cookie使用
+                    .header("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36")
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+                
+                if (response == null) {
+                    log.error("API响应为空");
+                    break;
+                }
+                
+                // 检查响应状态
+                Integer code = (Integer) response.get("code");
+                if (code == null || code != 0) {
+                    log.error("API返回错误: {}", response.get("msg"));
+                    break;
+                }
+                
+                // 获取数据
+                Map<String, Object> data = (Map<String, Object>) response.get("data");
+                if (data == null) {
+                    log.error("响应中没有data字段");
+                    break;
+                }
+                
+                List<Map<String, Object>> orderList = (List<Map<String, Object>>) data.get("list");
+                if (orderList != null && !orderList.isEmpty()) {
+                    // 转换订单数据格式
+                    for (Map<String, Object> order : orderList) {
+                        Map<String, Object> convertedOrder = convertOrderData(order);
+                        allOrders.add(convertedOrder);
+                    }
+                    log.info("第{}页获取到{}条订单", currentPage, orderList.size());
+                } else {
+                    log.info("第{}页没有订单数据", currentPage);
+                }
+                
+                // 检查是否有下一页
+                Boolean hasNextPage = (Boolean) data.get("hasNext");
+                hasNext = hasNextPage != null && hasNextPage;
+                currentPage++;
+                
+                // 防止无限循环，最多获取100页
+                if (currentPage > 100) {
+                    log.warn("已达到最大页数限制(100页)，停止获取");
+                    break;
+                }
+                
+                // 避免请求过快
+                if (hasNext) {
+                    Thread.sleep(1000);
+                }
+            }
+            
+            log.info("共获取到{}条订单数据", allOrders.size());
+            
+        } catch (Exception e) {
+            log.error("获取订单数据失败", e);
+        }
+        
+        return allOrders;
+    }
+    
+    /**
+     * 转换有赞订单数据为系统使用的格式
+     */
+    private Map<String, Object> convertOrderData(Map<String, Object> yzOrder) {
+        Map<String, Object> order = new java.util.HashMap<>();
+        
+        // 订单编号
+        order.put("orderId", yzOrder.get("orderNo"));
+        
+        // 分销员ID
+        Object dsUid = yzOrder.get("dsUid");
+        order.put("distributorId", dsUid != null ? ((Number) dsUid).longValue() : 0L);
+        
+        // 分销员名称
+        order.put("distributorName", yzOrder.getOrDefault("dsNickName", "未知分销员"));
+        
+        // 订单金额
+        String moneyStr = (String) yzOrder.getOrDefault("money", "0.00");
+        order.put("orderAmount", moneyStr);
+        
+        // 订单状态 - state字段：1=待付款，2=待发货，3=已发货，4=已完成，5=已关闭
+        Integer state = (Integer) yzOrder.get("state");
+        String orderStatus = "UNKNOWN";
+        if (state != null) {
+            switch (state) {
+                case 1: orderStatus = "PENDING_PAYMENT"; break;
+                case 2: orderStatus = "PENDING_SHIPMENT"; break;
+                case 3: orderStatus = "SHIPPED"; break;
+                case 4: orderStatus = "COMPLETED"; break;
+                case 5: orderStatus = "CLOSED"; break;
+                default: orderStatus = "UNKNOWN";
+            }
+        }
+        order.put("orderStatus", orderStatus);
+        
+        // 订单时间 - createTime是Unix时间戳（秒）
+        Object createTime = yzOrder.get("createTime");
+        if (createTime != null) {
+            long timestamp = ((Number) createTime).longValue();
+            LocalDateTime orderDate = LocalDateTime.ofEpochSecond(timestamp, 0, 
+                java.time.ZoneOffset.ofHours(8)); // 东八区
+            order.put("orderDate", orderDate.toString());
+        } else {
+            order.put("orderDate", LocalDateTime.now().toString());
+        }
+        
+        // 客户信息
+        order.put("customerName", yzOrder.getOrDefault("customerNickname", "未知客户"));
+        order.put("customerId", yzOrder.getOrDefault("customerMobile", "unknown"));
+        
+        return order;
     }
 }
